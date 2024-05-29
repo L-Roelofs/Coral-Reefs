@@ -1,0 +1,60 @@
+import numpy as np
+from scipy.integrate import odeint
+import matplotlib.pyplot as plt
+import matplotlib.ticker as ticker
+
+# Define the system of ODEs
+def model(y, t, ic, bc, dc, im, bm, g, r, f):
+    C, M, H = y
+    S = 1 - C - M
+    dCdt = (ic + bc*C)*S - dc*C
+    dMdt = (im + bm*M)*S - (g*H*M)
+    dHdt = r*H*(1 - H) - f*H
+    return [dCdt, dMdt, dHdt]
+
+# Set initial conditions
+C0 = 0.8
+M0 = 0.05
+H0 = 1
+y0 = [C0, M0, H0]
+
+# Set parameter values
+ic = 0.05
+im = 0.05
+bc = 0.3
+dc = 0.1
+bm = 0.8
+g = 1
+r = 1
+
+# Fishery values from 0 to 1
+f_values = np.linspace(0, 1, 100)
+
+# Time points
+t = np.linspace(0, 1000, 10000)
+
+# Solve the ODEs for each fishery value
+C_values = []
+M_values = []
+H_values = []
+for f in f_values:
+    sol = odeint(model, y0, t, args=(ic, bc, dc, im, bm, g, r, f))
+    C_values.append(sol[-1, 0])  # Extract the final value of coral abundance
+    M_values.append(sol[-1, 1])  # Extract the final value of macroalgae abundance
+    H_values.append(sol[-1, 2])  # Extract the final value of herbivores abundance
+
+# Plot the results
+plt.figure(figsize=(10, 6))
+plt.plot(f_values, C_values, label='Coral (C)')
+plt.plot(f_values, M_values, label='Macroalgae (M)')
+plt.plot(f_values, H_values, label='Herbivores (H)')
+plt.xlabel('Fishery (f)')
+plt.ylabel('Abundance')
+plt.title('Abundance of Coral, Macroalgae and Herbivores vs. Fishery')
+plt.legend()
+plt.grid(True, which='both', linestyle='--', linewidth=0.5)
+plt.gca().xaxis.set_major_locator(ticker.MultipleLocator(0.1))  # Set major ticks for x-axis
+plt.gca().xaxis.set_minor_locator(ticker.MultipleLocator(0.05)) # Set minor ticks for x-axis
+plt.gca().yaxis.set_major_locator(ticker.MultipleLocator(0.1))  # Set major ticks for y-axis
+plt.gca().yaxis.set_minor_locator(ticker.MultipleLocator(0.05))  # Set minor ticks for y-axis
+plt.show()
