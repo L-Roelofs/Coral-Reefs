@@ -53,8 +53,8 @@ plt.ylabel('Abundance')
 plt.title('Abundance of Coral, Macroalgae and Herbivores vs. Fishery')
 plt.legend()
 plt.grid(True, which='both', linestyle='--', linewidth=0.5)
-plt.gca().xaxis.set_major_locator(ticker.MultipleLocator(0.1))  # Set major ticks for x-axis
-plt.gca().xaxis.set_minor_locator(ticker.MultipleLocator(0.05)) # Set minor ticks for x-axis
-plt.gca().yaxis.set_major_locator(ticker.MultipleLocator(0.1))  # Set major ticks for y-axis
-plt.gca().yaxis.set_minor_locator(ticker.MultipleLocator(0.05))  # Set minor ticks for y-axis
+plt.gca().xaxis.set_major_locator(ticker.MultipleLocator(0.1))
+plt.gca().xaxis.set_minor_locator(ticker.MultipleLocator(0.05))
+plt.gca().yaxis.set_major_locator(ticker.MultipleLocator(0.1))
+plt.gca().yaxis.set_minor_locator(ticker.MultipleLocator(0.05))
 plt.show()
