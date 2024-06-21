@@ -4,13 +4,13 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 
 # System of ODEs
-def model(y, t, ic, bc, dc, im, bm, g, r, k, f, gamma, ac, ti):
+def model(y, t, ic, bc, dc, im, bm, g, r, k, f, gamma, ac, ti, sigma):
     C, M, H, Z = y
     S = 1 - C - M
     dCdt = (ic + (bc-ac) * C) * S * (1 + gamma * (Z - 1)) - dc * C
     dMdt = (im + bm * M) * S - g * H * M
     dHdt = r * H * (1 - H) - f * H
-    dZdt = k * Z * (1 - Z) * C - ti * Z
+    dZdt = k * Z * (1 - Z) * C - sigma * ti * Z
     return [dCdt, dMdt, dHdt, dZdt]
 
 # Initial conditions
@@ -28,19 +28,20 @@ dc = 0.1        # death rate coral
 bm = 0.8        # growth rate macroalgae
 g = 1           # grazing
 r = 1           # growth rate herbivores
-k = 0.3         # growth rate zooxanthellae
+k = 0.5         # growth rate zooxanthellae
  
-ac = 0.1        # effect of acidification on coral
-gamma = 0.5     # Effect of zooxanthellae on coral
-ti = 0.06       # Temperature increase
+ac = 0.05       # Effect of acidification on coral
+gamma = 0.3     # Effect of zooxanthellae on coral
+sigma = 0.1     # Effect of temperature increase on zooxanthellae
+ti = 0.5        # Temperature increase
 
 
 # Time points
 t = np.linspace(0, 1000, 10000)
 
-# Solve the ODEs for a fishery values to obtain final values
+# Solve the ODEs for a fishery value to obtain final values
 f_normal = 0.5
-sol_normal = odeint(model, y0, t, args=(ic, bc, dc, im, bm, g, r, k, f_normal, gamma, ac, ti))
+sol_normal = odeint(model, y0, t, args=(ic, bc, dc, im, bm, g, r, k, f_normal, gamma, ac, ti, sigma))
 C_final, M_final, H_final, Z_final = sol_normal[-1]
 
 # Use final values as initial conditions for reversed fishery values
@@ -51,7 +52,7 @@ Z0_reversed = Z_final
 
 # Fishery values
 f_values_normal = np.linspace(0, 1, 100)
-f_values_reversed = np.linspace(0.95, 0, 100)  # Reversed fisheries axis
+f_values_reversed = np.linspace(1, 0, 100)  # Reversed fisheries axis
 
 # Solve the ODEs for each fishery value
 C_values_normal = []
@@ -64,14 +65,14 @@ H_values_reversed = []
 Z_values_reversed = []
 
 for f in f_values_normal:
-    sol = odeint(model, y0, t, args=(ic, bc, dc, im, bm, g, r, k, f, gamma, ac, ti))
+    sol = odeint(model, y0, t, args=(ic, bc, dc, im, bm, g, r, k, f, gamma, ac, ti, sigma))
     C_values_normal.append(sol[-1, 0])
     M_values_normal.append(sol[-1, 1])
     H_values_normal.append(sol[-1, 2])
     Z_values_normal.append(sol[-1, 3])
 
 for f in f_values_reversed:
-    sol = odeint(model, [C0_reversed, M0_reversed, H0_reversed, Z0_reversed], t, args=(ic, bc, dc, im, bm, g, r, k, f, gamma, ac, ti))
+    sol = odeint(model, [C0_reversed, M0_reversed, H0_reversed, Z0_reversed], t, args=(ic, bc, dc, im, bm, g, r, k, f, gamma, ac, ti, sigma))
     C_values_reversed.append(sol[-1, 0])
     M_values_reversed.append(sol[-1, 1])
     H_values_reversed.append(sol[-1, 2])
@@ -79,18 +80,18 @@ for f in f_values_reversed:
 
 # Plot the results
 plt.figure(figsize=(10, 6))
-plt.plot(f_values_normal, C_values_normal, label='Coral (C)', color='blue')
-plt.plot(f_values_normal, M_values_normal, label='Macroalgae (M)', color='orange')
-plt.plot(f_values_normal, H_values_normal, label='Herbivores (H)', color='green')
-plt.plot(f_values_normal, Z_values_normal, label='Zooxanthellae (Z)', color='red')
-plt.plot(f_values_reversed, C_values_reversed, linestyle='--', color='blue')
-plt.plot(f_values_reversed, M_values_reversed, linestyle='--', color='orange')
-plt.plot(f_values_reversed, H_values_reversed, linestyle='--', color='green')
-plt.plot(f_values_reversed, Z_values_reversed, linestyle='--', color='red')
-plt.xlabel('Fishing (f)')
-plt.ylabel('Stable State Cover / Abundance')
-plt.title('Climate Change')
-plt.legend()
+plt.plot(f_values_normal, C_values_normal, label='Coral (C)', color='darkblue', linewidth=2)
+plt.plot(f_values_normal, M_values_normal, label='Macroalgae (M)', color='goldenrod', linewidth=2)
+plt.plot(f_values_normal, H_values_normal, label='Herbivores (H)', color='lightseagreen', linewidth=2)
+plt.plot(f_values_normal, Z_values_normal, label='Zooxanthellae (Z)', color='tomato', linewidth=2)
+plt.plot(f_values_reversed, C_values_reversed, linestyle='--', color='darkblue', linewidth=2)
+plt.plot(f_values_reversed, M_values_reversed, linestyle='--', color='goldenrod', linewidth=2)
+plt.plot(f_values_reversed, H_values_reversed, linestyle='--', color='lightseagreen', linewidth=2)
+plt.plot(f_values_reversed, Z_values_reversed, linestyle='--', color='tomato', linewidth=2)
+plt.xlabel('Fishing (f)', fontsize=14)
+plt.ylabel('Stable State Cover / Abundance', fontsize=14)
+plt.title('Climate Change', fontsize=16, fontweight='bold')
+plt.legend(fontsize=12)
 plt.grid(True, which='both', linestyle='--', linewidth=0.5)
 plt.gca().xaxis.set_major_locator(ticker.MultipleLocator(0.1))
 plt.gca().xaxis.set_minor_locator(ticker.MultipleLocator(0.05))
