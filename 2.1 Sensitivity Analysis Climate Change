@@ -1,1 +1,91 @@
+#Change all PARAMETER to to parameter you want to perform the sensitivity analysis for
+#Change LOWER BOUND, UPPER BOUND and STEPS to desired values
 
+import numpy as np
+from scipy.integrate import odeint
+import matplotlib.pyplot as plt
+import matplotlib.ticker as ticker
+
+#System of ODEs
+def model(y, t, ic, bc, dc, im, bm, g, r, k, f, gamma, ac, ti, sigma):
+    C, M, H, Z = y
+    S = 1 - C - M
+    dCdt = (ic + (bc-ac) * C) * S * (1 + gamma * (Z - 1)) - dc * C
+    dMdt = (im + bm * M) * S - g * H * M
+    dHdt = r * H * (1 - H) - f * H
+    dZdt = k * Z * (1 - Z) * C - sigma * ti * Z
+    return [dCdt, dMdt, dHdt, dZdt]
+
+#Initial conditions
+C0 = 0.8
+M0 = 0.05
+H0 = 1
+Z0 = 0.8
+y0 = [C0, M0, H0, Z0]
+
+#Parameter values
+ic = 0.05     # import external coral
+im = 0.05     # import external macroalgae
+bc = 0.3      # growth rate coral
+dc = 0.1      # death rate coral
+bm = 0.8      # growth rate macroalgae
+g = 1         # grazing
+r = 1         # growth rate herbivores
+k = 0.5       # growth rate zooxanthellae
+
+ac = 0.05     # Effect of acidification on coral
+gamma = 0.3   # Effect of zooxanthellae on coral
+sigma = 0.1   # Effect of temperature on zooxanthellae
+ti = 0.5      # Temperature increase
+
+#Range of parameter values for sensitivity analysis
+PARAMETER_values = np.arange(LOWER BOUND, UPPER BOUND, STEPS)
+
+#Time points
+t = np.linspace(0, 1000, 10000)
+
+#Colors for different sigma values using viridis colormap
+colors = plt.cm.viridis(np.linspace(0, 1, len(PARAMETER_values)))
+
+#Solve the ODEs for each sigma value
+plt.figure(figsize=(10, 6))
+for PARAMETER, color in zip(PARAMETER_values, colors):
+# Solve the ODEs for f=0.5 to obtain final values
+    f_normal = 0.3
+    sol_normal = odeint(model, y0, t, args=(ic, bc, dc, im, bm, g, r, k, f_normal, gamma, ac, ti, sigma))
+    C_final, M_final, H_final, Z_final = sol_normal[-1]
+
+
+    # Use final values as initial conditions for reversed fishery values
+    y0_reversed = [C_final, M_final, H_final, Z_final]
+
+    # Fishery values
+    f_values_normal = np.linspace(0, 1, 100)
+    f_values_reversed = np.linspace(1, 0, 100)  # Reversed fisheries axis
+
+    # Solve the ODEs for each fishery value
+    C_values_normal = []
+    C_values_reversed = []
+
+    for f in f_values_normal:
+        sol = odeint(model, y0, t, args=(ic, bc, dc, im, bm, g, r, k, f, gamma, ac, ti, sigma))
+        C_values_normal.append(sol[-1, 0])
+
+    for f in f_values_reversed:
+        sol = odeint(model, y0_reversed, t, args=(ic, bc, dc, im, bm, g, r, k, f, gamma, ac, ti, sigma))
+        C_values_reversed.append(sol[-1, 0])
+
+    # Plot the results
+    plt.plot(f_values_normal, C_values_normal, label=f'PARAMETER = {PARAMETER:.2f}', color=color, linewidth=2)
+    plt.plot(f_values_reversed, C_values_reversed, linestyle='--', color=color, linewidth=2)
+    
+plt.xlabel('Fishing (f)', fontsize=14)
+plt.ylabel('Coral Stable State Cover', fontsize=14)
+plt.title('Sensitivity of Coral Cover to PARAMETER', fontsize=16, fontweight='bold')
+plt.legend(fontsize=12)
+plt.grid(True, which='both', linestyle='--', linewidth=0.5)
+plt.gca().xaxis.set_major_locator(ticker.MultipleLocator(0.1))
+plt.gca().xaxis.set_minor_locator(ticker.MultipleLocator(0.05))
+plt.gca().yaxis.set_major_locator(ticker.MultipleLocator(0.1))
+plt.gca().yaxis.set_minor_locator(ticker.MultipleLocator(0.05))
+plt.show()
