@@ -1,3 +1,6 @@
+#Change all PARAMETER to to parameter you want to perform the sensitivity analysis for
+#Change LOWER BOUND, UPPER BOUND and STEPS to desired values
+
 import numpy as np
 from scipy.integrate import odeint
 import matplotlib.pyplot as plt
@@ -36,7 +39,7 @@ N = 0.5         # Nutrients
 delta = 0.05    # Effect of nutrients on zooxanthellae
 
 # Range of PARAMETER values for sensitivity analysis
-PARAMETER_values = np.linspace(LOWER, UPPER, 11)
+PARAMETER_values = np.linspace(LOWER BOUND, UPPER BOUND, STEPS)
 
 # Time points
 t = np.linspace(0, 1000, 10000)
