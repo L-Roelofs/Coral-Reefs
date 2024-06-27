@@ -1,1 +1,2 @@
-
+#Change all PARAMETER to to parameter you want to perform the sensitivity analysis for
+#Change LOWER BOUND, UPPER BOUND and STEPS to desired values
