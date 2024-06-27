@@ -31,17 +31,17 @@ g = 1           # grazing
 r = 1           # growth rate herbivores
 
 alpha = 0.5     # Competition effect 
-beta = 0.01     # Fishing intensity feedback 
+beta = 0        # Fishing intensity feedback 
 gamma = 0.3     # Effect of zooxanthellae on coral 
 delta = 0.05    # Effect of nutrients on zooxanthellae 
-eta = 0.05      # Effect of toxic substances on coral mortality 
+eta = 0         # Effect of toxic substances on coral mortality 
 sigma = 0.1     # Effect of temperature on zooxanthellae 
 ac = 0.05       # Effect of acidification on coral 
 k = 0.5         # growth rate zooxanthellae 
 N = 0.5         # Nutrients 
-T = 0.5         # Toxicants
-tc = 0.05       # Effect of toxicants on coral growth
-ti = 0.5        # Temperature increase
+T = 0           # Toxicants 
+tc = 0          # Effect of toxicants on coral growth 
+ti = 0.5        # Temperature increase 
 
 
 # Time points
@@ -101,8 +101,8 @@ plt.ylabel('Stable State Cover / Abundance', fontsize=14)
 plt.title('Climate Change & Nutrient Enrichment', fontsize=16, fontweight='bold')
 plt.legend(fontsize=12)
 plt.grid(True, which='both', linestyle='--', linewidth=0.5)
-plt.gca().xaxis.set_major_locator(ticker.MultipleLocator(0.1))
-plt.gca().xaxis.set_minor_locator(ticker.MultipleLocator(0.05))
+plt.gca().xaxis.set_major_locator(ticker.MultipleLocator(0.1)) 
+plt.gca().xaxis.set_minor_locator(ticker.MultipleLocator(0.05)) 
 plt.gca().yaxis.set_major_locator(ticker.MultipleLocator(0.1))
 plt.gca().yaxis.set_minor_locator(ticker.MultipleLocator(0.05))
 plt.show()
