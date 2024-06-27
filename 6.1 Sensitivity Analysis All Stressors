@@ -1,2 +1,98 @@
 #Change all PARAMETER to to parameter you want to perform the sensitivity analysis for
 #Change LOWER BOUND, UPPER BOUND and STEPS to desired values
+
+import numpy as np
+from scipy.integrate import odeint
+import matplotlib.pyplot as plt
+import matplotlib.ticker as ticker
+
+# System of ODEs
+def model(y, t, ic, bc, dc, im, bm, g, r, k, f, gamma, alpha, N, delta, ac, ti, tc, eta, T, beta, sigma):
+    C, M, H, Z = y
+    S = 1 - C - M
+    I = beta * (f / (H + 0.01))
+    dCdt = (ic + (bc - ac - tc) * C) * S * (1 - alpha * M) * (1 + gamma * (Z - 1)) - (dc + eta * T * (1 + eta / C)) * C - f * C * I
+    dMdt = (im + bm * M * (1 + N)) * S - g * H * M
+    dHdt = r * H * (1 - H) - f * H * (1 + I)
+    dZdt = k * Z * (1 - Z) * C - delta * N * Z - sigma * ti * Z
+    return [dCdt, dMdt, dHdt, dZdt]
+
+# Initial conditions
+C0 = 0.8
+M0 = 0.05
+H0 = 1
+Z0 = 0.8
+y0 = [C0, M0, H0, Z0]
+
+# Parameter values
+ic = 0.05       # import external coral
+im = 0.05       # import external macroalgae
+bc = 0.3        # growth rate coral
+dc = 0.1        # death rate coral
+bm = 0.8        # growth rate macroalgae
+g = 1           # grazing
+r = 1           # growth rate herbivores
+k = 0.5         # growth rate zooxanthellae
+
+alpha = 0.5     # Competition
+beta = 0.01     # Fishing intensity feedback 0.01
+gamma = 0.3     # Effect of zooxanthellae on coral 0.5
+delta = 0.05    # Effect of nutrients on zooxanthellae 0.05
+eta = 0.05      # Effect of toxic substances on coral mortality 0.05
+sigma = 0.1     # Effect temperature increase on zooxanthellae
+ac = 0.05       # Effect of acidification on coral 0.1
+N = 0.5         # Nutrients 1
+T = 0.5         # Toxicants 1
+tc = 0.05       # Effect of toxicants on coral growth 0.1
+ti = 0.5        # temperature increase
+
+# Time points
+t = np.linspace(0, 750, 7500)
+
+# Define the range of values
+PARAMETER_values = np.linspace(LOWER BOUND, UPPER BOUND, STEPS)
+
+# Colors for different values
+colors = plt.cm.viridis(np.linspace(0, 1, len(PARAMETER_values)))
+
+# Solve the ODEs for each value
+plt.figure(figsize=(10, 6))  # Increase figure size
+for PARAMETER, color in zip(r_values, colors):
+    # Solve the ODEs for f=0.6 to obtain final values
+    f_normal = 0.38
+    sol_normal = odeint(model, y0, t, args=(ic, bc, dc, im, bm, g, r, k, f_normal, gamma, alpha, N, delta, ac, ti, tc, eta, T, beta, sigma))
+    C_final, M_final, H_final, Z_final = sol_normal[-1]
+
+    # Use final values from f=0.6 as initial conditions for reversed fishery values
+    y0_reversed = [C_final, M_final, H_final, Z_final]
+
+    # Fishery values
+    f_values_normal = np.linspace(0, 1, 100)
+    f_values_reversed = np.linspace(1, 0, 100)  # Reversed fisheries axis
+
+    # Solve the ODEs for each fishery value
+    C_values_normal = []
+    C_values_reversed = []
+
+    for f in f_values_normal:
+        sol = odeint(model, y0, t, args=(ic, bc, dc, im, bm, g, r, k, f, gamma, alpha, N, delta, ac, ti, tc, eta, T, beta, sigma))
+        C_values_normal.append(sol[-1, 0])
+
+    for f in f_values_reversed:
+        sol = odeint(model, y0_reversed, t, args=(ic, bc, dc, im, bm, g, r, k, f, gamma, alpha, N, delta, ac, ti, tc, eta, T, beta, sigma))
+        C_values_reversed.append(sol[-1, 0])
+
+    # Plot the results
+    plt.plot(f_values_normal, C_values_normal, label=f'PARAMETER = {PARAMETER:.2f}', color=color, linewidth=2)
+    plt.plot(f_values_reversed, C_values_reversed, linestyle='--', color=color, linewidth=2)
+
+plt.xlabel('Fishing (f)', fontsize=14)
+plt.ylabel('Coral Stable State Cover', fontsize=14)
+plt.title('Sensitivity of Coral Cover to PARAMETER', fontsize=16, fontweight='bold')
+plt.legend(fontsize=12)
+plt.grid(True, which='both', linestyle='--', linewidth=0.5)
+plt.gca().xaxis.set_major_locator(ticker.MultipleLocator(0.1))  
+plt.gca().xaxis.set_minor_locator(ticker.MultipleLocator(0.05)) 
+plt.gca().yaxis.set_major_locator(ticker.MultipleLocator(0.1)) 
+plt.gca().yaxis.set_minor_locator(ticker.MultipleLocator(0.05)) 
+plt.show()
